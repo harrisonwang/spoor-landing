@@ -1,0 +1,171 @@
+---
+import type { Lang } from "../i18n/ui";
+import { useT } from "../i18n/ui";
+import Agent from "./Agent.astro";
+interface Props {
+    lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+---
+
+<section id="top">
+    <div class="wrap grid">
+        <div class="col">
+            <div class="badge"><span class="dot"></span>{t("hero.badge")}</div>
+            <h1>
+                {
+                    t("hero.title.b") && (
+                        <span class="hl">{t("hero.title.b")}</span>
+                    )
+                }
+                {t("hero.title.a")}
+            </h1>
+            <p class="sub">{t("hero.sub")}</p>
+            <div class="cta">
+                <div class="cmd">
+                    <span class="dollar">$</span>
+                    <span class="text">pip install pyspoor</span>
+                    <button
+                        class="copy"
+                        data-copy="pip install pyspoor"
+                        aria-label="Copy">&#8943;</button
+                    >
+                </div>
+                <a
+                    class="ghlink"
+                    href="https://github.com/harrisonwang/spoor"
+                    target="_blank"
+                    rel="noopener">{t("hero.github")}<span>→</span></a
+                >
+            </div>
+        </div>
+        <div class="col"><Agent lang={lang} /></div>
+    </div>
+</section>
+
+<script>
+    document
+        .querySelectorAll<HTMLButtonElement>("button[data-copy]")
+        .forEach((b) => {
+            b.addEventListener("click", () => {
+                navigator.clipboard?.writeText(b.dataset.copy || "");
+                const prev = b.textContent;
+                b.textContent = "\u2713";
+                setTimeout(() => {
+                    b.textContent = prev;
+                }, 1400);
+            });
+        });
+</script>
+
+<style>
+    .grid {
+        padding: 78px 32px 64px;
+        display: grid;
+        grid-template-columns: minmax(360px, 0.82fr) minmax(620px, 1.18fr);
+        gap: 56px;
+        align-items: center;
+    }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: #f6ece4;
+        border: 1px solid #ecd9c9;
+        color: var(--terracotta-dark);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        padding: 6px 13px;
+        border-radius: 999px;
+        font-family: var(--mono);
+    }
+    .badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--terracotta);
+    }
+    h1 {
+        font-weight: 700;
+        font-size: clamp(32px, 3.8vw, 50px);
+        line-height: 1.08;
+        letter-spacing: -0.028em;
+        margin: 22px 0 0;
+        max-width: 600px;
+        text-wrap: balance;
+    }
+    .hl {
+        color: var(--terracotta);
+    }
+    .sub {
+        font-size: clamp(17px, 1.5vw, 19px);
+        line-height: 1.62;
+        color: var(--ink-2);
+        margin: 20px 0 0;
+        max-width: 590px;
+    }
+    .cta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        margin: 30px 0 0;
+    }
+    .cmd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--term-bg);
+        border-radius: 11px;
+        padding: 5px 6px 5px 16px;
+    }
+    .cmd .dollar {
+        color: #5f7a52;
+        font-family: var(--mono);
+        font-size: 14px;
+    }
+    .cmd .text {
+        font-family: var(--mono);
+        font-size: 14px;
+        color: #e8e4da;
+        font-weight: 500;
+    }
+    .copy {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: #2b2823;
+        color: #cabfae;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.15s;
+    }
+    .copy:hover {
+        background: #3a352d;
+    }
+    .ghlink {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+        border-bottom: 2px solid #e7c9b8;
+        padding-bottom: 2px;
+        transition: border-color 0.15s;
+    }
+    .ghlink:hover {
+        border-color: var(--terracotta);
+    }
+    @media (max-width: 1100px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

@@ -1,0 +1,55 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useT } from '../i18n/ui';
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useT(lang);
+const other = lang === 'zh' ? 'en' : 'zh';
+const navItems = [
+  { href: '#top', key: 'nav.agent' as const },
+  { href: '#cli', key: 'nav.cli' as const },
+  { href: '#runtime', key: 'nav.runtime' as const },
+  { href: '#install', key: 'nav.install' as const },
+  { href: '#develop', key: 'nav.develop' as const },
+];
+---
+<header>
+  <div class="wrap bar">
+    <a href="#top" class="brand">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="name">spoor</span>
+    </a>
+    <nav class="links">
+      {navItems.map((n) => <a href={n.href}>{t(n.key)}</a>)}
+    </nav>
+    <div class="right">
+      <div class="langtoggle">
+        <a class:list={["tab-lang", { 'is-on': lang === 'zh' }]} href={`/zh/`}>中</a>
+        <a class:list={["tab-lang", { 'is-on': lang === 'en' }]} href={`/en/`}>EN</a>
+      </div>
+      <a class="gh" href="https://github.com/harrisonwang/spoor" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  header { position: sticky; top: 0; z-index: 50; background: rgba(250,248,243,.82); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .bar { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .dots { display: inline-flex; align-items: center; gap: 3px; }
+  .dots i { display: block; border-radius: 50%; }
+  .dots i:nth-child(1) { width: 7px; height: 7px; background: #d9c3b3; }
+  .dots i:nth-child(2) { width: 8px; height: 8px; background: #cf8a63; }
+  .dots i:nth-child(3) { width: 10px; height: 10px; background: var(--terracotta); }
+  .name { font-family: var(--display); font-weight: 700; font-size: 19px; }
+  .links { display: flex; align-items: center; gap: 30px; font-size: 14px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+  .links a:hover { color: var(--terracotta); }
+  .right { display: flex; align-items: center; gap: 14px; }
+  .langtoggle { display: flex; align-items: center; gap: 2px; background: #f1ebdd; border: 1px solid #e6dcc9; border-radius: 8px; padding: 2px; }
+  .gh { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; padding: 9px 15px; border-radius: 9px; white-space: nowrap; transition: transform .15s; }
+  .gh:hover { transform: translateY(-1px); }
+  @media (max-width: 820px) { .links { display: none; } }
+</style>

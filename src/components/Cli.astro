@@ -1,0 +1,38 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useT } from '../i18n/ui';
+import CliTerminal from './CliTerminal.astro';
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useT(lang);
+const flags = [
+  t('cli.f1'),
+  t('cli.f2'),
+  t('cli.f3'),
+];
+---
+<section id="cli">
+  <div class="wrap grid">
+    <CliTerminal lang={lang} />
+    <div class="col">
+      <div class="eyebrow">{t('cli.eyebrow')}</div>
+      <h2>{t('cli.title.a')}{t('cli.title.b') && <span> {t('cli.title.b')}</span>}</h2>
+      <p class="sub">{t('cli.sub')}</p>
+      <div class="features">
+        {flags.map((text) => (
+          <span>{text}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #cli { background: var(--paper-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .grid { padding: 88px 28px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+  h2 { font-weight: 700; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.12; margin: 13px 0 0; max-width: 680px; text-wrap: balance; }
+  .sub { font-size: 16px; line-height: 1.65; color: var(--ink-2); margin: 18px 0 0; max-width: 520px; }
+  .features { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .features span { border: 1px solid var(--line); background: rgba(255, 255, 255, .55); color: var(--terracotta-dark); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+</style>

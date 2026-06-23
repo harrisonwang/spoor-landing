@@ -1,0 +1,346 @@
+---
+import type { Lang } from "../i18n/ui";
+import { useT } from "../i18n/ui";
+interface Props {
+    lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const zh = lang === "zh";
+
+const inputs = [
+    { label: "PDF", icon: "/icons/runtime/pdf.svg" },
+    { label: "XLSX", icon: "/icons/runtime/xlsx.svg" },
+    { label: "DOCX", icon: "/icons/runtime/docx.svg" },
+    { label: "URL", icon: "/icons/runtime/url.svg" },
+    { label: "PPTX", icon: "/icons/runtime/pptx.svg" },
+    { label: "More formats", icon: "/icons/runtime/more.svg" },
+];
+
+const cards = [
+    {
+        tag: t("runtime.c1.tag"),
+        title: t("runtime.c1.title"),
+        body: t("runtime.c1.body"),
+        foot: "CLI / Rust / Python / Node.js",
+        icon: "/icons/runtime/server.svg",
+    },
+    {
+        tag: t("runtime.c2.tag"),
+        title: t("runtime.c2.title"),
+        body: t("runtime.c2.body"),
+        foot: "Browser / Electron / Tauri",
+        icon: "/icons/runtime/browser.svg",
+    },
+    {
+        tag: t("runtime.c3.tag"),
+        title: t("runtime.c3.title"),
+        body: t("runtime.c3.body"),
+        foot: "Cloudflare / AWS / 其他云厂商",
+        icon: "/icons/runtime/edge.svg",
+    },
+];
+
+const outputs = [
+    { label: "Markdown", icon: "/icons/runtime/markdown.svg" },
+    { label: "JSON", icon: "/icons/runtime/json.svg" },
+];
+---
+
+<section id="runtime">
+    <div class="wrap inner">
+        <div class="lead">
+            <div class="eyebrow">{t("runtime.eyebrow")}</div>
+            <h2>{t("runtime.title")}</h2>
+            <p class="sub">{t("runtime.sub")}</p>
+        </div>
+
+        <div class="runtime-flow">
+            <div
+                class="io input-side"
+                aria-label={zh ? "输入格式" : "Input formats"}
+            >
+                <div class="input-icons">
+                    {
+                        inputs.map((item) => (
+                            <div class="input-item">
+                                <img
+                                    src={item.icon}
+                                    alt={item.label}
+                                    loading="lazy"
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <svg
+                class="connector"
+                viewBox="0 0 54 420"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                <path d="M0 210 C28 210 24 64 54 64"></path>
+                <path d="M0 210 L54 210"></path>
+                <path d="M0 210 C28 210 24 356 54 356"></path>
+                <path class="pulse" d="M0 210 C28 210 24 64 54 64"></path>
+                <path class="pulse" d="M0 210 L54 210"></path>
+                <path class="pulse" d="M0 210 C28 210 24 356 54 356"></path>
+                <circle class="node main" cx="2" cy="210" r="3.5"></circle>
+                <circle class="node" cx="52" cy="64" r="3"></circle>
+                <circle class="node" cx="52" cy="210" r="3"></circle>
+                <circle class="node" cx="52" cy="356" r="3"></circle>
+            </svg>
+
+            <div class="targets">
+                {
+                    cards.map((card) => (
+                        <article class="runtime-card">
+                            <div class="icon" aria-hidden="true">
+                                <img src={card.icon} alt="" loading="lazy" />
+                            </div>
+                            <div class="card-head">
+                                <div class="ctag">{card.tag}</div>
+                                <h3>{card.title}</h3>
+                                <div class="cfoot">{card.foot}</div>
+                            </div>
+                            <p>{card.body}</p>
+                        </article>
+                    ))
+                }
+            </div>
+
+            <svg
+                class="connector"
+                viewBox="0 0 54 420"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                <path d="M0 64 C30 64 26 210 54 210"></path>
+                <path d="M0 210 L54 210"></path>
+                <path d="M0 356 C30 356 26 210 54 210"></path>
+                <path class="pulse" d="M0 64 C30 64 26 210 54 210"></path>
+                <path class="pulse" d="M0 210 L54 210"></path>
+                <path class="pulse" d="M0 356 C30 356 26 210 54 210"></path>
+                <circle class="node" cx="2" cy="64" r="3"></circle>
+                <circle class="node" cx="2" cy="210" r="3"></circle>
+                <circle class="node" cx="2" cy="356" r="3"></circle>
+                <circle class="node main" cx="52" cy="210" r="3.5"></circle>
+            </svg>
+
+            <div
+                class="io output-side"
+                aria-label={zh ? "输出格式" : "Output formats"}
+            >
+                <div class="outputs">
+                    {
+                        outputs.map((item) => (
+                            <img
+                                src={item.icon}
+                                alt={item.label}
+                                loading="lazy"
+                            />
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    @keyframes spoorFlow {
+        to {
+            stroke-dashoffset: -10;
+        }
+    }
+
+    #runtime {
+        background: var(--paper);
+    }
+    .inner {
+        padding: 5.5rem 2rem;
+    }
+    .lead {
+        max-width: 42.5rem;
+        margin-bottom: 2.75rem;
+    }
+    h2 {
+        font-weight: 700;
+        font-size: clamp(28px, 2.8vw, 38px);
+        line-height: 1.12;
+        margin: 0.8rem 0 0;
+        max-width: 42.5rem;
+        text-wrap: balance;
+    }
+    .sub {
+        font-size: 1rem;
+        line-height: 1.65;
+        color: var(--ink-2);
+        margin: 1rem 0 0;
+        max-width: 44rem;
+    }
+    .sub code {
+        font-family: var(--mono);
+        color: #3a352d;
+    }
+
+    .runtime-flow {
+        width: min(100%, 66rem);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 8.25rem 8rem minmax(0, 42rem) 8rem 4.5rem;
+        align-items: center;
+    }
+    .io {
+        text-align: center;
+    }
+    .input-icons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.9rem 0.95rem;
+        justify-items: center;
+        max-width: 8.25rem;
+        margin: 0 auto;
+    }
+    .input-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .input-item img {
+        width: 1.95rem;
+        height: 1.95rem;
+        object-fit: contain;
+        opacity: 0.84;
+    }
+    .ctag,
+    .cfoot {
+        font-family: var(--mono);
+    }
+
+    .connector {
+        width: 8rem;
+        height: 26.25rem;
+        display: block;
+        overflow: visible;
+    }
+    .connector path {
+        fill: none;
+        stroke: #e3d3bd;
+        stroke-width: 1.5;
+    }
+    .connector .pulse {
+        stroke: var(--terracotta);
+        stroke-width: 1.6;
+        stroke-dasharray: 2 8;
+        stroke-linecap: round;
+        animation: spoorFlow 0.9s linear infinite;
+    }
+    .connector .node {
+        fill: #c8643f;
+    }
+    .connector .main {
+        fill: var(--terracotta);
+    }
+
+    .targets {
+        display: flex;
+        flex-direction: column;
+        gap: 1.125rem;
+        min-width: 0;
+    }
+    .runtime-card {
+        min-height: 8rem;
+        display: grid;
+        grid-template-columns: 2.4rem minmax(10.5rem, 12.25rem) minmax(0, 1fr);
+        align-items: center;
+        gap: 0.9rem;
+        background: rgba(255, 253, 248, 0.72);
+        border: 1px solid #eadfce;
+        border-radius: 0.9rem;
+        padding: 0.95rem 1.125rem;
+    }
+    .icon {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 0.65rem;
+        background: #f3eadc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon img {
+        width: 1.125rem;
+        height: 1.125rem;
+        object-fit: contain;
+    }
+    .ctag {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--terracotta-dark);
+        letter-spacing: 0.02em;
+    }
+    .card-head h3 {
+        font-size: 0.98rem;
+        font-weight: 600;
+        margin-top: 0.2rem;
+        font-family: "IBM Plex Sans", "Noto Sans SC", sans-serif;
+        letter-spacing: 0;
+    }
+    .cfoot {
+        margin-top: 0.25rem;
+        font-size: 0.65rem;
+        color: #b3a995;
+        white-space: nowrap;
+    }
+    .runtime-card p {
+        font-size: 0.86rem;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .outputs {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        align-items: center;
+        justify-content: center;
+    }
+    .outputs img {
+        width: 2.5rem;
+        height: 2.5rem;
+        object-fit: contain;
+        opacity: 0.84;
+    }
+
+    @media (max-width: 1120px) {
+        .runtime-flow {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        .connector {
+            display: none;
+        }
+        .runtime-card {
+            grid-template-columns: 2.4rem minmax(10.5rem, 12.25rem) minmax(
+                    0,
+                    1fr
+                );
+        }
+    }
+
+    @media (max-width: 720px) {
+        .inner {
+            padding: 4.5rem 2rem;
+        }
+        .runtime-card {
+            grid-template-columns: 2.4rem 1fr;
+            align-items: start;
+        }
+        .runtime-card p {
+            grid-column: 2;
+        }
+    }
+</style>

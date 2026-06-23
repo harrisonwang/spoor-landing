@@ -1,0 +1,557 @@
+---
+import type { Lang } from "../i18n/ui";
+import { traceScenes } from "../data/terminals";
+interface Props {
+    lang: Lang;
+}
+const { lang } = Astro.props;
+const L = lang === "zh";
+const agentName = "智能体";
+
+const convs = L
+    ? [
+          {
+              side: "付款审批包抽取",
+              time: "now",
+              title: "付款审批包抽取",
+              file: "vendor_payment_pack.pdf",
+              scene: 0,
+          },
+          {
+              side: "研报图表解读",
+              time: "now",
+              title: "研报图表解读",
+              file: "央行工作论文.pdf",
+              scene: 1,
+          },
+          {
+              side: "销售数据汇总",
+              time: "now",
+              title: "销售数据汇总",
+              file: "销售数据.xlsx",
+              scene: 2,
+          },
+          {
+              side: "操作手册梳理",
+              time: "now",
+              title: "操作手册梳理",
+              file: "录入流程.docx",
+              scene: 3,
+          },
+          {
+              side: "提取合同关键条款",
+              time: "10m",
+              title: "合同条款抽取",
+              file: "服务协议.docx",
+              scene: 3,
+          },
+          {
+              side: "汇总各部门周报",
+              time: "30m",
+              title: "部门周报汇总",
+              file: "周报文件夹",
+              scene: 1,
+          },
+          {
+              side: "比对两版方案差异",
+              time: "45m",
+              title: "方案差异比对",
+              file: "proposal_v2.docx",
+              scene: 3,
+          },
+      ]
+    : [
+          {
+              side: "Payment pack review",
+              time: "now",
+              title: "Payment pack review",
+              file: "vendor_payment_pack.pdf",
+              scene: 0,
+          },
+          {
+              side: "Report chart review",
+              time: "now",
+              title: "Report charts",
+              file: "central_bank_paper.pdf",
+              scene: 1,
+          },
+          {
+              side: "Sales data summary",
+              time: "now",
+              title: "Sales summary",
+              file: "sales_data.xlsx",
+              scene: 2,
+          },
+          {
+              side: "SOP walkthrough",
+              time: "now",
+              title: "SOP walkthrough",
+              file: "onboarding_sop.docx",
+              scene: 3,
+          },
+          {
+              side: "Extract contract terms",
+              time: "10m",
+              title: "Contract terms",
+              file: "service_agreement.docx",
+              scene: 3,
+          },
+          {
+              side: "Roll up team weeklies",
+              time: "30m",
+              title: "Weekly rollup",
+              file: "weeklies",
+              scene: 1,
+          },
+          {
+              side: "Diff two proposals",
+              time: "45m",
+              title: "Proposal diff",
+              file: "proposal_v2.docx",
+              scene: 3,
+          },
+      ];
+
+const cfg = {
+    agentName,
+    convs,
+    scenes: traceScenes,
+};
+---
+
+<div id="oa">
+    <div class="bar">
+        <span class="d" style="background:#ec6a5e"></span>
+        <span class="d" style="background:#f4bf4f"></span>
+        <span class="d" style="background:#61c454"></span>
+    </div>
+
+    <div class="panes">
+        <div class="rail">
+            {
+                convs.map((c, i) => (
+                    <button
+                        class:list={["conv", { "is-on": i === 0 }]}
+                        data-i={i}
+                    >
+                        <span class="hl" />
+                        <span class="q">{c.side}</span>
+                        <span class="tm">{c.time}</span>
+                    </button>
+                ))
+            }
+        </div>
+
+        <div class="main">
+            <div class="thread">
+                <div class="urow">
+                    <span class="gut">你</span>
+                    <span class="uq" id="oa-userq"></span>
+                </div>
+                <div class="rule"></div>
+                <div id="oa-body"></div>
+                <span class="cursor"></span>
+            </div>
+            <div class="composer">
+                <span class="ph">{L ? "追问下一步…" : "ask a follow-up…"}</span>
+                <span class="send">↑</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="oa-cfg" set:html={JSON.stringify(cfg)} />
+
+<script>
+    type Line = { role?: string; sub?: string; text: string; kind: string };
+    type Conv = { title: string; file: string; scene: number };
+    const cfg = JSON.parse(document.getElementById("oa-cfg")!.textContent!);
+    const scenes: { fmt: string; lines: Line[] }[] = cfg.scenes;
+    const convs: Conv[] = cfg.convs;
+    const agentName: string = cfg.agentName;
+
+    const BOX: Record<string, string> = {
+        reason: "r-reason",
+        call: "r-call",
+        result: "r-result",
+        warn: "r-warn",
+        uri: "r-call",
+        vlm: "r-call",
+        vlmResult: "r-result",
+        msg: "r-msg",
+    };
+    const PRE: Record<string, string> = {
+        call: "\u2192 ",
+        result: "\u2713 ",
+        warn: "\u26a0 ",
+        vlm: "\u2192 ",
+    };
+    const LABEL: Record<string, string> = {
+        reason: "",
+        msg: "",
+        call: "read",
+        result: "read",
+        warn: "signal",
+        uri: "read",
+        vlm: "vlm",
+        vlmResult: "vlm",
+    };
+
+    const win = document.getElementById("oa")!;
+    const body = document.getElementById("oa-body")!;
+    const userqEl = document.getElementById("oa-userq")!;
+    const convBtns = Array.from(
+        win.querySelectorAll<HTMLButtonElement>(".conv"),
+    );
+    let gen = 0,
+        manual = false;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const TRACE = new Set([
+        "reason",
+        "call",
+        "result",
+        "warn",
+        "uri",
+        "vlm",
+        "vlmResult",
+    ]);
+
+    function appendRow(o: Line, showAgentLabel = false) {
+        const row = document.createElement("div");
+        row.className = "rrow";
+        row.style.marginTop =
+            o.kind === "reason" || o.kind === "msg" ? "11px" : "5px";
+        const gut = document.createElement("span");
+        gut.className = "gut";
+        gut.textContent = showAgentLabel ? agentName : "";
+        const txt = document.createElement("span");
+        txt.className = BOX[o.kind] || "r-result";
+        const prefix = PRE[o.kind] || "";
+        const inlineLabel = LABEL[o.kind] || "";
+        txt.textContent = TRACE.has(o.kind)
+            ? inlineLabel.padEnd(7, " ") + prefix + (o.text || "\u00a0")
+            : prefix + (o.text || "\u00a0");
+        row.appendChild(gut);
+        row.appendChild(txt);
+        body.appendChild(row);
+    }
+
+    function render(lines: Line[]) {
+        body.innerHTML = "";
+        for (let i = 0; i < lines.length; i++) appendRow(lines[i], i === 0);
+    }
+
+    async function loop(idx: number) {
+        const my = ++gen;
+        const live = () => gen === my;
+        convBtns.forEach((b, n) => b.classList.toggle("is-on", n === idx));
+        const scene = scenes[convs[idx].scene] || scenes[idx % scenes.length];
+        const uLine = scene.lines.find((l) => l.kind === "user");
+        userqEl.textContent = uLine ? uLine.text : "";
+        const rest = scene.lines.filter((l) => l.kind !== "user");
+        render([]);
+        await sleep(360);
+        if (!live()) return;
+        for (let i = 0; i < rest.length; i++) {
+            render(rest.slice(0, i + 1));
+            const k = rest[i].kind;
+            await sleep(
+                k === "reason"
+                    ? 560
+                    : k === "msg"
+                      ? 460
+                      : k === "call" || k === "vlm"
+                        ? 340
+                        : k === "warn"
+                          ? 300
+                          : 220,
+            );
+            if (!live()) return;
+        }
+        render(rest);
+        await sleep(manual ? 5200 : 3400);
+        if (!live()) return;
+        if (manual) return;
+        loop((idx + 1) % convs.length);
+    }
+
+    convBtns.forEach((b, i) =>
+        b.addEventListener("click", () => {
+            manual = true;
+            loop(i);
+        }),
+    );
+    loop(0);
+</script>
+
+<style>
+    #oa {
+        background: #fbf9f4;
+        border: 1px solid #e4dccb;
+        border-radius: 13px;
+        box-shadow: 0 38px 90px -40px rgba(50, 28, 14, 0.42);
+        overflow: hidden;
+    }
+    .bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        background: #efe9de;
+        border-bottom: 1px solid #e4dccb;
+    }
+    .bar .d {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+    }
+
+    .panes {
+        display: grid;
+        grid-template-columns: 182px 1fr;
+        height: 486px;
+    }
+
+    .rail {
+        background: #f6f1e8;
+        border-right: 1px solid #e8e0d0;
+        padding: 9px 7px;
+        overflow: hidden;
+    }
+    .conv {
+        position: relative;
+        appearance: none;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 7px 9px 9px;
+    }
+    .conv .hl {
+        position: absolute;
+        inset: 0;
+        background: #e7e0d2;
+        border-radius: 8px;
+        opacity: 0;
+        transition: opacity 0.15s;
+    }
+    .conv.is-on .hl {
+        opacity: 1;
+    }
+    .conv .q {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        font-size: 12.5px;
+        color: #2a2620;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .conv .tm {
+        position: relative;
+        flex: none;
+        width: 28px;
+        text-align: right;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #b3a995;
+    }
+
+    .main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: #fdfbf6;
+    }
+    .mhead {
+        padding: 13px 18px 11px;
+        border-bottom: 1px solid #efe7d8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .mhead .ava {
+        flex: none;
+        width: 21px;
+        height: 21px;
+        border-radius: 6px;
+        background: var(--terracotta);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .mhead .aname {
+        font-size: 13px;
+        font-weight: 700;
+        color: #2a2620;
+    }
+    .mhead .ctitle {
+        font-size: 12px;
+        color: #9a9082;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mhead .file {
+        margin-left: auto;
+        flex: none;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #a39884;
+    }
+
+    .thread {
+        flex: 1;
+        overflow: hidden;
+        padding: 18px 18px 16px;
+    }
+    .urow {
+        display: flex;
+        gap: 9px;
+    }
+    .gut {
+        flex: none;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: #b3a995;
+        letter-spacing: 0.04em;
+        padding-top: 2px;
+        width: 42px;
+    }
+    .uq {
+        flex: 1;
+        font-size: 13.5px;
+        color: #2a2620;
+        line-height: 1.5;
+        font-weight: 400;
+    }
+    .rule {
+        height: 1px;
+        background: #efe7d8;
+        margin: 14px 0;
+    }
+    #oa-body :global(.rrow) {
+        display: flex;
+        gap: 9px;
+    }
+
+    #oa-body :global(.gut) {
+        flex: none;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: #b3a995;
+        letter-spacing: 0.04em;
+        padding-top: 2px;
+        width: 42px;
+    }
+    #oa-body :global(.r-reason) {
+        flex: 1;
+        min-width: 0;
+        font-style: italic;
+        color: #9a9082;
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+    #oa-body :global(.r-call) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #4a443b;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+    #oa-body :global(.r-result) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #9a9082;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+    #oa-body :global(.r-warn) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #6b6355;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+    #oa-body :global(.r-uri) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #a39884;
+        word-break: break-word;
+    }
+    #oa-body :global(.r-vlm),
+    #oa-body :global(.r-vlm-result) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #6f6a60;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+    #oa-body :global(.r-msg) {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        color: #2a2620;
+        line-height: 1.55;
+        font-weight: 400;
+        white-space: pre-wrap;
+    }
+    .cursor {
+        display: inline-block;
+        margin-left: 51px;
+        width: 6px;
+        height: 13px;
+        background: #c79a78;
+        vertical-align: -2px;
+        animation: blink 1s steps(1) infinite;
+    }
+
+    .composer {
+        margin: 12px 16px;
+        border: 1px solid #e4dccb;
+        border-radius: 11px;
+        background: #fff;
+        padding: 10px 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .composer .ph {
+        flex: 1;
+        font-size: 12.5px;
+        color: #b3a995;
+    }
+    .composer .send {
+        flex: none;
+        width: 27px;
+        height: 27px;
+        border-radius: 8px;
+        background: var(--term-bg);
+        color: #faf6ec;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+</style>

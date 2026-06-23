@@ -1,0 +1,197 @@
+---
+import type { Lang } from "../i18n/ui";
+import { useT } from "../i18n/ui";
+import { cliSeq } from "../data/terminals";
+interface Props {
+    lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const fmts = cliSeq.map((s) => s.fmt);
+---
+
+<div class="term">
+    <div class="head">
+        <span class="d"></span><span class="d"></span><span class="d"></span>
+        <span class="title">CLI</span>
+        <span class="badge">离线</span>
+    </div>
+    <div class="tabs" id="cli-tabs">
+        {
+            fmts.map((f, i) => (
+                <button
+                    class:list={["tab-fmt", { "is-on": i === 0 }]}
+                    data-i={i}
+                >
+                    {f}
+                </button>
+            ))
+        }
+    </div>
+    <div class="body">
+        <div class="prompt">
+            <span class="caret">&#10095;</span><span id="cli-typed"></span><span
+                class="cursor"></span>
+        </div>
+        <div id="cli-out" class="out"></div>
+    </div>
+</div>
+
+<script
+    type="application/json"
+    id="cli-data"
+    set:html={JSON.stringify(cliSeq)}
+/>
+
+<script>
+    type Line = { text: string; kind: string };
+    type Step = { fmt: string; cmd: string; out: Line[] };
+    const COLOR: Record<string, string> = {
+        norm: "#d8d4ca",
+        accent: "#7fae6a",
+        warn: "#e8915f",
+        warnDim: "#9a8064",
+        head: "#f4f0e6",
+        dim: "#6f6a60",
+        key: "#9db98a",
+        uri: "#eaa074",
+    };
+    const seq: Step[] = JSON.parse(
+        document.getElementById("cli-data")!.textContent!,
+    );
+    const typed = document.getElementById("cli-typed")!;
+    const out = document.getElementById("cli-out")!;
+    const tabs = document.getElementById("cli-tabs")!;
+    const btns = Array.from(tabs.querySelectorAll("button"));
+    let gen = 0,
+        manual = false;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    function renderOut(lines: Line[]) {
+        out.innerHTML = "";
+        for (const o of lines) {
+            const d = document.createElement("div");
+            d.style.color = COLOR[o.kind] || "#d8d4ca";
+            d.style.whiteSpace = "pre-wrap";
+            d.style.wordBreak = "break-word";
+            d.textContent = o.text || "\u00a0";
+            out.appendChild(d);
+        }
+    }
+
+    async function loop(startIdx: number) {
+        const my = ++gen;
+        let idx = startIdx;
+        const live = () => gen === my;
+        while (live()) {
+            const step = seq[idx];
+            btns.forEach((b, n) => b.classList.toggle("is-on", n === idx));
+            typed.textContent = "";
+            renderOut([]);
+            await sleep(150);
+            if (!live()) return;
+            for (let c = 1; c <= step.cmd.length; c++) {
+                typed.textContent = step.cmd.slice(0, c);
+                await sleep(34);
+                if (!live()) return;
+            }
+            await sleep(380);
+            if (!live()) return;
+            const acc: Line[] = [];
+            for (const ln of step.out) {
+                acc.push(ln);
+                renderOut(acc.slice());
+                await sleep(80);
+                if (!live()) return;
+            }
+            await sleep(manual ? 4600 : 2800);
+            if (!live()) return;
+            if (manual) return;
+            idx = (idx + 1) % seq.length;
+        }
+    }
+
+    btns.forEach((b, i) =>
+        b.addEventListener("click", () => {
+            manual = true;
+            loop(i);
+        }),
+    );
+    loop(0);
+</script>
+
+<style>
+    .term {
+        background: var(--term-bg);
+        border-radius: 15px;
+        border: 1px solid var(--term-line);
+        box-shadow: 0 30px 70px -30px rgba(50, 28, 14, 0.45);
+        overflow: hidden;
+    }
+    .head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--term-line);
+        background: var(--term-bg-2);
+    }
+    .head .d {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #3d3833;
+    }
+    .head .title {
+        margin-left: 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #6f6a60;
+    }
+    .head .badge {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #5f7a52;
+        letter-spacing: 0.06em;
+    }
+    .tabs {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 14px;
+        background: #1f1c18;
+        border-bottom: 1px solid var(--term-line);
+    }
+    .body {
+        padding: 18px 20px 20px;
+        min-height: 280px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.62;
+    }
+    .prompt {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+    .caret {
+        color: var(--terracotta);
+    }
+    #cli-typed {
+        color: #f2eee4;
+        font-weight: 500;
+    }
+    .cursor {
+        display: inline-block;
+        width: 8px;
+        height: 14px;
+        background: var(--terracotta);
+        margin-left: 1px;
+        vertical-align: -2px;
+        animation: blink 1s steps(1) infinite;
+    }
+    .out {
+        margin-top: 10px;
+    }
+</style>

@@ -1,0 +1,140 @@
+/* ---- Fonts ---- */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap");
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    background: #faf8f3;
+    color: #1f1c18;
+    font-family: "IBM Plex Sans", "Noto Sans SC", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+a {
+    color: inherit;
+    text-decoration: none;
+}
+button {
+    font: inherit;
+}
+::selection {
+    background: #f0c9b5;
+    color: #3a1d12;
+}
+
+/* ---- Design tokens ---- */
+:root {
+    --paper: #faf8f3;
+    --paper-2: #f5efe3;
+    --ink: #1f1c18;
+    --ink-2: #6b655a;
+    --muted: #8a8275;
+    --terracotta: #c25a35;
+    --terracotta-dark: #a8492a;
+    --line: #ece5d6;
+    --term-bg: #1c1a17;
+    --term-bg-2: #211e1a;
+    --term-line: #2b2823;
+    --mono: "JetBrains Mono", monospace;
+    --display: "Bricolage Grotesque", "Noto Sans SC", sans-serif;
+}
+
+.wrap {
+    max-width: 96rem;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+.eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--terracotta);
+}
+h1,
+h2,
+h3 {
+    font-family: var(--display);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+@keyframes blink {
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0;
+    }
+}
+
+/* ---- Tab buttons (active state via .is-on class, toggled by vanilla JS) ---- */
+.tab-fmt {
+    appearance: none;
+    cursor: pointer;
+    border: 1px solid #38322b;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 11px;
+    padding: 3px 12px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+}
+.tab-fmt.is-on {
+    background: var(--terracotta);
+    color: #fff;
+    border-color: var(--terracotta);
+}
+
+.tab-dark {
+    appearance: none;
+    cursor: pointer;
+    border: none;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 9px 14px;
+    border-radius: 8px 8px 0 0;
+    letter-spacing: 0.01em;
+    background: transparent;
+    color: #7c7567;
+    transition: all 0.15s;
+}
+.tab-dark.is-on {
+    background: var(--term-bg);
+    color: #faf6ec;
+}
+
+.tab-lang {
+    appearance: none;
+    cursor: pointer;
+    border: none;
+    font-family: "IBM Plex Sans", "Noto Sans SC", sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 4px 11px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+}
+.tab-lang.is-on {
+    background: #fff;
+    color: var(--terracotta);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
