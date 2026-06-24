@@ -1,4 +1,30 @@
 ---
-// Root → default locale. zh is the default.
-return Astro.redirect('/zh/');
+// Root: detect the visitor's browser language and route to /zh/ or /en/.
+// This is a static build (no server), so Accept-Language can't be read here —
+// detection runs in the browser. No-JS visitors fall back to the default locale.
 ---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex" />
+        <title>spoor</title>
+        <script is:inline>
+            (function () {
+                var lang = (
+                    navigator.language ||
+                    navigator.userLanguage ||
+                    "en"
+                ).toLowerCase();
+                var target = lang.indexOf("zh") === 0 ? "/zh/" : "/en/";
+                location.replace(target);
+            })();
+        </script>
+        <noscript>
+            <meta http-equiv="refresh" content="0; url=/zh/" />
+        </noscript>
+    </head>
+    <body></body>
+</html>

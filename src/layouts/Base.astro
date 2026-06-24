@@ -1,19 +1,34 @@
 ---
-import '../styles/global.css';
-import type { Lang } from '../i18n/ui';
-interface Props { lang: Lang; title?: string; description?: string; }
-const { lang, title = 'spoor — Agent 专用文档解析引擎', description = 'Turn any document into text your agent can read. Offline, single binary.' } = Astro.props;
+import "../styles/global.css";
+import type { Lang } from "../i18n/ui";
+interface Props {
+    lang: Lang;
+    title?: string;
+    description?: string;
+}
+const { lang, title, description } = Astro.props;
+const pageTitle =
+    title ??
+    (lang === "zh"
+        ? "spoor — 智能体专用文档解析引擎"
+        : "spoor — Agent-first document parsing engine");
+const pageDescription =
+    description ??
+    (lang === "zh"
+        ? "把任意文档变成智能体能直接读取的文本。离线、单二进制。"
+        : "Turn any document into text your agent can read. Offline, single binary.");
 ---
+
 <!doctype html>
-<html lang={lang === 'zh' ? 'zh-CN' : 'en'}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-  </head>
-  <body>
-    <slot />
-  </body>
+<html lang={lang === "zh" ? "zh-CN" : "en"}>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+    </head>
+    <body>
+        <slot />
+    </body>
 </html>

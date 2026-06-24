@@ -1,20 +1,60 @@
 ---
 import type { Lang } from "../i18n/ui";
-import { useT } from "../i18n/ui";
 import { cliSeq } from "../data/terminals";
 interface Props {
     lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useT(lang);
-const fmts = cliSeq.map((s) => s.fmt);
+const cliSeqForLang =
+    lang === "zh"
+        ? cliSeq
+        : cliSeq.map((step) => {
+              const cmd = step.cmd
+                  .replace("央行工作论文.pdf", "central-bank-paper.pdf")
+                  .replace("销售数据.xlsx", "sales_data.xlsx")
+                  .replace("录入流程.docx", "onboarding_sop.docx");
+              const textMap: Record<string, string> = {
+                  "warning: 解析结果不完整 央行工作论文.pdf:":
+                      "warning: incomplete parse central-bank-paper.pdf:",
+                  "区块链能做什么、不能做什么？  徐忠 邹传伟":
+                      "Blockchain: what it can and cannot do?  Xu Zhong · Zou Chuanwei",
+                  "图 1：Token 范式概括": "Figure 1: Token paradigm overview",
+                  "> [!WARNING] spoor 返回 1 条完整性警告":
+                      "> [!WARNING] spoor returned 1 integrity warning",
+                  '  "usage": "收窄:--sheet / --rows / --columns",':
+                      '  "usage": "narrow with: --sheet / --rows / --columns",',
+                  '  "tables": [{ "sheet": "汇总",':
+                      '  "tables": [{ "sheet": "Summary",',
+                  '    "headers": { "指标": {…}, "数值": {…} },':
+                      '    "headers": { "Metric": {…}, "Value": {…} },',
+                  '    "rows": [ {"指标":"总订单数","数值":"50000"},':
+                      '    "rows": [ {"Metric":"Total orders","Value":"50000"},',
+                  '              {"指标":"客户总数","数值":"10000"} ],':
+                      '              {"Metric":"Total customers","Value":"10000"} ],',
+                  "warning: 解析结果不完整 录入流程.docx:":
+                      "warning: incomplete parse onboarding_sop.docx:",
+                  "录入人脸    具体房号    X栋X单元":
+                      "Face enrollment    Room number    Building/unit",
+                  "> [!WARNING] 含图片/绘图，Agent 应按需提取":
+                      "> [!WARNING] images/diagrams present; agent should extract on demand",
+              };
+              return {
+                  ...step,
+                  cmd,
+                  out: step.out.map((line) => ({
+                      ...line,
+                      text: textMap[line.text] ?? line.text,
+                  })),
+              };
+          });
+const fmts = cliSeqForLang.map((s) => s.fmt);
 ---
 
 <div class="term">
     <div class="head">
         <span class="d"></span><span class="d"></span><span class="d"></span>
         <span class="title">CLI</span>
-        <span class="badge">离线</span>
+        <span class="badge">{lang === "zh" ? "离线" : "Offline"}</span>
     </div>
     <div class="tabs" id="cli-tabs">
         {
@@ -40,7 +80,7 @@ const fmts = cliSeq.map((s) => s.fmt);
 <script
     type="application/json"
     id="cli-data"
-    set:html={JSON.stringify(cliSeq)}
+    set:html={JSON.stringify(cliSeqForLang)}
 />
 
 <script>

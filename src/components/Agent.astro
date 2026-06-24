@@ -1,125 +1,69 @@
 ---
 import type { Lang } from "../i18n/ui";
-import { traceScenes } from "../data/terminals";
+import { traceScenes, traceScenesEn } from "../data/terminals";
 interface Props {
     lang: Lang;
 }
 const { lang } = Astro.props;
 const L = lang === "zh";
-const agentName = "智能体";
+const agentName = L ? "智能体" : "Agent";
 
 const convs = L
     ? [
           {
-              side: "付款审批包抽取",
+              side: "供应商付款核对",
               time: "now",
-              title: "付款审批包抽取",
+              title: "供应商付款核对",
               file: "vendor_payment_pack.pdf",
               scene: 0,
           },
           {
-              side: "识破坏扫描件",
-              time: "now",
-              title: "坏文本层识破",
-              file: "尽调报告_扫描版.pdf",
+              side: "销售数据汇总",
+              time: "1h",
+              title: "销售数据汇总",
+              file: "销售数据.xlsx",
               scene: 1,
           },
           {
-              side: "销售数据汇总",
-              time: "now",
-              title: "销售数据汇总",
-              file: "销售数据.xlsx",
-              scene: 2,
-          },
-          {
-              side: "操作手册梳理",
-              time: "now",
-              title: "操作手册梳理",
+              side: "录入流程步骤梳理",
+              time: "3h",
+              title: "录入流程步骤梳理",
               file: "录入流程.docx",
-              scene: 3,
-          },
-          {
-              side: "提取合同关键条款",
-              time: "10m",
-              title: "合同条款抽取",
-              file: "服务协议.docx",
-              scene: 3,
-          },
-          {
-              side: "汇总各部门周报",
-              time: "30m",
-              title: "部门周报汇总",
-              file: "周报文件夹",
               scene: 2,
-          },
-          {
-              side: "比对两版方案差异",
-              time: "45m",
-              title: "方案差异比对",
-              file: "proposal_v2.docx",
-              scene: 3,
           },
       ]
     : [
           {
-              side: "Payment pack review",
+              side: "Vendor payment review",
               time: "now",
-              title: "Payment pack review",
+              title: "Vendor payment review",
               file: "vendor_payment_pack.pdf",
               scene: 0,
           },
           {
-              side: "Bad scan caught",
-              time: "now",
-              title: "Suspect text layer",
-              file: "due_diligence_scan.pdf",
+              side: "Sales data summary",
+              time: "1h",
+              title: "Sales data summary",
+              file: "sales_data.xlsx",
               scene: 1,
           },
           {
-              side: "Sales data summary",
-              time: "now",
-              title: "Sales summary",
-              file: "sales_data.xlsx",
-              scene: 2,
-          },
-          {
-              side: "SOP walkthrough",
-              time: "now",
-              title: "SOP walkthrough",
+              side: "Onboarding steps",
+              time: "3h",
+              title: "Onboarding steps",
               file: "onboarding_sop.docx",
-              scene: 3,
-          },
-          {
-              side: "Extract contract terms",
-              time: "10m",
-              title: "Contract terms",
-              file: "service_agreement.docx",
-              scene: 3,
-          },
-          {
-              side: "Roll up team weeklies",
-              time: "30m",
-              title: "Weekly rollup",
-              file: "weeklies",
               scene: 2,
-          },
-          {
-              side: "Diff two proposals",
-              time: "45m",
-              title: "Proposal diff",
-              file: "proposal_v2.docx",
-              scene: 3,
           },
       ];
 
 const cfg = {
     agentName,
     convs,
-    scenes: traceScenes,
+    scenes: L ? traceScenes : traceScenesEn,
 };
 ---
 
-<div id="oa">
+<div id="agent-demo">
     <div class="bar">
         <span class="d" style="background:#ec6a5e"></span>
         <span class="d" style="background:#f4bf4f"></span>
@@ -146,26 +90,25 @@ const cfg = {
             <div class="thread">
                 <div class="urow">
                     <span class="gut">你</span>
-                    <span class="uq" id="oa-userq"></span>
+                    <span class="uq" id="agent-demo-userq"></span>
                 </div>
                 <div class="rule"></div>
-                <div id="oa-body"></div>
+                <div id="agent-demo-body"></div>
                 <span class="cursor"></span>
             </div>
             <div class="composer">
-                <span class="ph">{L ? "追问下一步…" : "ask a follow-up…"}</span>
-                <span class="send">↑</span>
+                <span class="ph">{L ? "追问下一步…" : "Ask a follow-up…"}</span>
             </div>
         </div>
     </div>
 </div>
 
-<script type="application/json" id="oa-cfg" set:html={JSON.stringify(cfg)} />
+<script type="application/json" id="agent-demo-cfg" set:html={JSON.stringify(cfg)} />
 
 <script>
     type Line = { role?: string; sub?: string; text: string; kind: string };
     type Conv = { title: string; file: string; scene: number };
-    const cfg = JSON.parse(document.getElementById("oa-cfg")!.textContent!);
+    const cfg = JSON.parse(document.getElementById("agent-demo-cfg")!.textContent!);
     const scenes: { fmt: string; lines: Line[] }[] = cfg.scenes;
     const convs: Conv[] = cfg.convs;
     const agentName: string = cfg.agentName;
@@ -186,35 +129,16 @@ const cfg = {
         warn: "\u26a0 ",
         vlm: "\u2192 ",
     };
-    const LABEL: Record<string, string> = {
-        reason: "",
-        msg: "",
-        call: "read",
-        result: "read",
-        warn: "signal",
-        uri: "read",
-        vlm: "vlm",
-        vlmResult: "vlm",
-    };
 
-    const win = document.getElementById("oa")!;
-    const body = document.getElementById("oa-body")!;
-    const userqEl = document.getElementById("oa-userq")!;
+    const win = document.getElementById("agent-demo")!;
+    const body = document.getElementById("agent-demo-body")!;
+    const userqEl = document.getElementById("agent-demo-userq")!;
     const convBtns = Array.from(
         win.querySelectorAll<HTMLButtonElement>(".conv"),
     );
     let gen = 0,
         manual = false;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    const TRACE = new Set([
-        "reason",
-        "call",
-        "result",
-        "warn",
-        "uri",
-        "vlm",
-        "vlmResult",
-    ]);
 
     function appendRow(o: Line, showAgentLabel = false) {
         const row = document.createElement("div");
@@ -227,10 +151,7 @@ const cfg = {
         const txt = document.createElement("span");
         txt.className = BOX[o.kind] || "r-result";
         const prefix = PRE[o.kind] || "";
-        const inlineLabel = LABEL[o.kind] || "";
-        txt.textContent = TRACE.has(o.kind)
-            ? inlineLabel.padEnd(7, " ") + prefix + (o.text || "\u00a0")
-            : prefix + (o.text || "\u00a0");
+        txt.textContent = prefix + (o.text || "\u00a0");
         row.appendChild(gut);
         row.appendChild(txt);
         body.appendChild(row);
@@ -285,7 +206,7 @@ const cfg = {
 </script>
 
 <style>
-    #oa {
+    #agent-demo {
         background: #fbf9f4;
         border: 1px solid #e4dccb;
         border-radius: 13px;
@@ -309,7 +230,7 @@ const cfg = {
     .panes {
         display: grid;
         grid-template-columns: 182px 1fr;
-        height: 486px;
+        height: 528px;
     }
 
     .rail {
@@ -411,6 +332,7 @@ const cfg = {
 
     .thread {
         flex: 1;
+        min-height: 0;
         overflow: hidden;
         padding: 18px 18px 16px;
     }
@@ -440,12 +362,12 @@ const cfg = {
         background: #efe7d8;
         margin: 14px 0;
     }
-    #oa-body :global(.rrow) {
+    #agent-demo-body :global(.rrow) {
         display: flex;
         gap: 9px;
     }
 
-    #oa-body :global(.gut) {
+    #agent-demo-body :global(.gut) {
         flex: none;
         font-family: var(--mono);
         font-size: 10px;
@@ -455,7 +377,7 @@ const cfg = {
         padding-top: 2px;
         width: 42px;
     }
-    #oa-body :global(.r-reason) {
+    #agent-demo-body :global(.r-reason) {
         flex: 1;
         min-width: 0;
         font-style: italic;
@@ -463,7 +385,7 @@ const cfg = {
         font-size: 12.5px;
         line-height: 1.5;
     }
-    #oa-body :global(.r-call) {
+    #agent-demo-body :global(.r-call) {
         flex: 1;
         min-width: 0;
         font-family: var(--mono);
@@ -472,7 +394,7 @@ const cfg = {
         line-height: 1.5;
         word-break: break-word;
     }
-    #oa-body :global(.r-result) {
+    #agent-demo-body :global(.r-result) {
         flex: 1;
         min-width: 0;
         font-family: var(--mono);
@@ -481,7 +403,7 @@ const cfg = {
         line-height: 1.5;
         word-break: break-word;
     }
-    #oa-body :global(.r-warn) {
+    #agent-demo-body :global(.r-warn) {
         flex: 1;
         min-width: 0;
         font-family: var(--mono);
@@ -490,7 +412,7 @@ const cfg = {
         font-weight: 600;
         line-height: 1.5;
     }
-    #oa-body :global(.r-uri) {
+    #agent-demo-body :global(.r-uri) {
         flex: 1;
         min-width: 0;
         font-family: var(--mono);
@@ -498,8 +420,8 @@ const cfg = {
         color: #a39884;
         word-break: break-word;
     }
-    #oa-body :global(.r-vlm),
-    #oa-body :global(.r-vlm-result) {
+    #agent-demo-body :global(.r-vlm),
+    #agent-demo-body :global(.r-vlm-result) {
         flex: 1;
         min-width: 0;
         font-family: var(--mono);
@@ -508,7 +430,7 @@ const cfg = {
         line-height: 1.5;
         word-break: break-word;
     }
-    #oa-body :global(.r-msg) {
+    #agent-demo-body :global(.r-msg) {
         flex: 1;
         min-width: 0;
         font-size: 13px;
@@ -541,17 +463,5 @@ const cfg = {
         flex: 1;
         font-size: 12.5px;
         color: #b3a995;
-    }
-    .composer .send {
-        flex: none;
-        width: 27px;
-        height: 27px;
-        border-radius: 8px;
-        background: var(--term-bg);
-        color: #faf6ec;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
     }
 </style>

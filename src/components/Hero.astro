@@ -19,6 +19,7 @@ const t = useT(lang);
                         <span class="hl">{t("hero.title.b")}</span>
                     )
                 }
+                {lang === "en" && t("hero.title.b") ? " " : ""}
                 {t("hero.title.a")}
             </h1>
             <p class="sub">{t("hero.sub")}</p>

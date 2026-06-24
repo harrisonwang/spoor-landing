@@ -32,6 +32,8 @@ const flags = [
   .grid { padding: 88px 28px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
   h2 { font-weight: 700; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.12; margin: 13px 0 0; max-width: 680px; text-wrap: balance; }
   .sub { font-size: 16px; line-height: 1.65; color: var(--ink-2); margin: 18px 0 0; max-width: 520px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 9px; }
+  .eyebrow::before { width: 28px; height: 1px; content: ""; background: currentColor; }
   .features { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
   .features span { border: 1px solid var(--line); background: rgba(255, 255, 255, .55); color: var(--terracotta-dark); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }

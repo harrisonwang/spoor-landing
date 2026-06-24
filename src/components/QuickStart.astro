@@ -32,6 +32,25 @@ const CTA_LABEL: Record<string, string> = {
     rust: t("quickStart.cta.rust"),
     web: t("quickStart.cta.web"),
 };
+const quickStartTabsForLang =
+    lang === "zh"
+        ? quickStartTabs
+        : quickStartTabs.map((tab) => ({
+              ...tab,
+              steps: tab.steps.map((step) =>
+                  step.map((line) => ({
+                      ...line,
+                      text:
+                          line.text === "Q3 营收 1.28 亿，同比 +18% …"
+                              ? "Q3 revenue: ¥128M, up 18% YoY …"
+                              : line.text === "选择 report.pdf"
+                                ? "Choose report.pdf"
+                                : line.text === "✓ 0 网络请求 · 文件不出端"
+                                  ? "✓ 0 network requests · file stays local"
+                                  : line.text,
+                  })),
+              ),
+          }));
 const quickStartStepLabels = [
     t("quickStart.s1"),
     t("quickStart.s2"),
@@ -57,7 +76,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                 <p class="sub">{t("quickStart.sub")}</p>
                 <div class="quick-start-tabs" role="tablist">
                     {
-                        quickStartTabs.map((tb, i) => (
+                        quickStartTabsForLang.map((tb, i) => (
                             <button
                                 id={`quick-start-tab-${i}`}
                                 class:list={[
@@ -81,7 +100,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
 
         <div class="quick-start-panels">
             {
-                quickStartTabs.map((tb, i) => (
+                quickStartTabsForLang.map((tb, i) => (
                     <div
                         id={`quick-start-panel-${i}`}
                         class:list={["quick-start-panel", { "is-on": i === 0 }]}
@@ -114,6 +133,8 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                                 {tb.steps.map((lines, s) => {
                                     const isWebFirstStep =
                                         tb.key === "web" && s === 0;
+                                    const isCliInstall =
+                                        tb.key === "cli" && s === 0;
                                     return (
                                         <div
                                             class:list={[
@@ -144,31 +165,15 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                                                               ]}
                                                     </span>
                                                 </div>
-                                                {s < 2 ? (
-                                                    <button
-                                                        class="quick-start-copy"
-                                                        type="button"
-                                                        aria-label={t(
-                                                            "quickStart.copy",
-                                                        )}
-                                                    >
-                                                        {t("quickStart.copy")}
-                                                    </button>
-                                                ) : (
-                                                    <a
-                                                        class="quick-start-view"
-                                                        href="https://github.com/harrisonwang/spoor/tree/main/examples"
-                                                        target="_blank"
-                                                        rel="noopener"
-                                                        aria-label={t(
-                                                            "quickStart.view",
-                                                        )}
-                                                    >
-                                                        {t("quickStart.view")}
-                                                    </a>
-                                                )}
                                             </div>
-                                            <div class="quick-start-code">
+                                            <div
+                                                class="quick-start-code"
+                                                data-os-install={
+                                                    isCliInstall
+                                                        ? "1"
+                                                        : undefined
+                                                }
+                                            >
                                                 {lines.map((ln) => (
                                                     <div
                                                         class="cl"
@@ -187,7 +192,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                                     class="quick-start-primary"
                                     type="button"
                                 >
-                                    {CTA_LABEL[tb.key] || t("quickStart.copy")}
+                                    {CTA_LABEL[tb.key] || CTA_LABEL.cli}
                                 </button>
                                 <a
                                     class="quick-start-secondary"
@@ -296,15 +301,6 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                 trigger.classList.remove("is-copied");
             }, 1400);
         };
-        root.querySelectorAll<HTMLButtonElement>(".quick-start-copy").forEach(
-            (btn) => {
-                btn.addEventListener("click", async () => {
-                    const step = btn.closest(".quick-start-step");
-                    if (!step) return;
-                    await copyTextFromStep(step, btn);
-                });
-            },
-        );
         root.querySelectorAll<HTMLButtonElement>(
             ".quick-start-primary",
         ).forEach((btn) => {
@@ -315,6 +311,28 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
                 await copyTextFromStep(step, btn);
             });
         });
+
+        // 按操作系统切换 CLI 安装命令：Windows → scoop；默认 macOS（brew）
+        const isWindows =
+            /Win/i.test(navigator.platform || "") ||
+            /Windows/i.test(navigator.userAgent || "");
+        if (isWindows) {
+            const installEl =
+                root.querySelector<HTMLElement>("[data-os-install]");
+            if (installEl) {
+                installEl.innerHTML = "";
+                [
+                    "$ scoop bucket add harrisonwang https://github.com/harrisonwang/scoop-bucket",
+                    "$ scoop install spoor",
+                ].forEach((cmd) => {
+                    const line = document.createElement("div");
+                    line.className = "cl";
+                    line.style.color = "#7fae6a";
+                    line.textContent = cmd;
+                    installEl.appendChild(line);
+                });
+            }
+        }
     });
 </script>
 
@@ -355,7 +373,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
         );
     }
     .inner {
-        max-width: 1180px;
+        max-width: 1260px;
         padding-top: clamp(76px, 8vw, 112px);
         padding-bottom: clamp(76px, 8vw, 108px);
     }
@@ -462,7 +480,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
     }
     .quick-start-workbench {
         position: relative;
-        padding: 16px;
+        padding: 14px;
         background: rgba(255, 252, 246, 0.72);
         border: 1px solid rgba(122, 95, 64, 0.2);
         border-radius: 22px;
@@ -533,7 +551,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
     .quick-start-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
+        gap: 10px;
         align-items: stretch;
     }
     .quick-start-step {
@@ -542,7 +560,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
         min-width: 0;
         min-height: 208px;
         flex-direction: column;
-        padding: 20px;
+        padding: 18px;
         overflow: visible;
         background: rgba(255, 254, 251, 0.9);
         border: 1px solid #e5d9c7;
@@ -585,7 +603,7 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
         position: absolute;
         z-index: 3;
         top: 50%;
-        right: -19px;
+        right: -17px;
         width: 24px;
         height: 24px;
         content: "→";
@@ -631,52 +649,20 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
         font-size: 11.5px;
         line-height: 1.4;
     }
-    .quick-start-copy,
-    .quick-start-view {
-        flex: none;
-        display: inline-flex;
-        min-width: 44px;
-        height: 25px;
-        align-items: center;
-        justify-content: center;
-        margin-left: auto;
-        padding: 0 8px;
-        color: #8a7c69;
-        background: transparent;
-        border: 1px solid #e5d9c8;
-        border-radius: 6px;
-        cursor: pointer;
-        font-family: var(--mono);
-        font-size: 9px;
-        font-weight: 700;
-        text-transform: uppercase;
-        transition:
-            color 0.15s ease,
-            background 0.15s ease,
-            border-color 0.15s ease;
-    }
-    .quick-start-copy:hover,
-    .quick-start-view:hover {
-        color: var(--terracotta-dark);
-        background: #fff9f0;
-        border-color: #d9bda7;
-    }
-    .quick-start-copy:focus-visible,
-    .quick-start-view:focus-visible,
     .quick-start-primary:focus-visible,
     .quick-start-secondary:focus-visible {
         outline: 2px solid var(--terracotta);
         outline-offset: 3px;
     }
-    .quick-start-copy.is-copied {
-        color: #42663b;
-        border-color: #abc4a4;
-    }
+
     .quick-start-code {
         position: relative;
+        display: flex;
         flex: 1;
+        flex-direction: column;
+        justify-content: center;
         min-height: 90px;
-        padding: 34px 15px 14px;
+        padding: 28px 14px 20px;
         overflow: auto;
         color: #d8d4ca;
         background:
@@ -705,8 +691,8 @@ const webFirstStepDescription = t("quickStart.s1.web.desc");
             18px 0 #3e4e37;
     }
     .quick-start-code .cl {
-        white-space: pre-wrap;
-        word-break: break-word;
+        white-space: pre;
+        word-break: normal;
     }
 
     .quick-start-footer {
