@@ -1,0 +1,853 @@
+---
+import type { Lang } from "../i18n/ui";
+import { useT } from "../i18n/ui";
+import { quickStartTabs } from "../data/terminals";
+interface Props {
+    lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+
+const COLOR: Record<string, string> = {
+    norm: "#d8d4ca",
+    accent: "#7fae6a",
+    warn: "#e8915f",
+    warnDim: "#9a8064",
+    head: "#f4f0e6",
+    dim: "#8b8472",
+    key: "#9db98a",
+    uri: "#eaa074",
+};
+const TAB_LABEL: Record<string, string> = {
+    cli: "CLI",
+    py: "Python",
+    node: "Node.js",
+    rust: "Rust",
+    web: t("quickStart.tab.web"),
+};
+const CTA_LABEL: Record<string, string> = {
+    cli: t("quickStart.cta.cli"),
+    py: t("quickStart.cta.py"),
+    node: t("quickStart.cta.node"),
+    rust: t("quickStart.cta.rust"),
+    web: t("quickStart.cta.web"),
+};
+const quickStartStepLabels = [
+    t("quickStart.s1"),
+    t("quickStart.s2"),
+    t("quickStart.s3"),
+];
+const quickStartStepDescriptions = [
+    t("quickStart.s1.desc"),
+    t("quickStart.s2.desc"),
+    t("quickStart.s3.desc"),
+];
+const webFirstStepLabel = t("quickStart.s1.web");
+const webFirstStepDescription = t("quickStart.s1.web.desc");
+---
+
+<section id="start">
+    <div class="wrap inner">
+        <div class="quick-start-intro">
+            <div class="lead">
+                <div class="eyebrow">{t("quickStart.eyebrow")}</div>
+                <h2>{t("quickStart.title")}</h2>
+            </div>
+            <div class="quick-start-intro-side">
+                <p class="sub">{t("quickStart.sub")}</p>
+                <div class="quick-start-tabs" role="tablist">
+                    {
+                        quickStartTabs.map((tb, i) => (
+                            <button
+                                id={`quick-start-tab-${i}`}
+                                class:list={[
+                                    "quick-start-tab",
+                                    { "is-on": i === 0 },
+                                ]}
+                                type="button"
+                                role="tab"
+                                aria-selected={i === 0 ? "true" : "false"}
+                                aria-controls={`quick-start-panel-${i}`}
+                                tabindex={i === 0 ? 0 : -1}
+                                data-i={i}
+                            >
+                                {TAB_LABEL[tb.key] || tb.key}
+                            </button>
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-start-panels">
+            {
+                quickStartTabs.map((tb, i) => (
+                    <div
+                        id={`quick-start-panel-${i}`}
+                        class:list={["quick-start-panel", { "is-on": i === 0 }]}
+                        role="tabpanel"
+                        aria-labelledby={`quick-start-tab-${i}`}
+                        hidden={i !== 0}
+                        data-i={i}
+                    >
+                        <div class="quick-start-workbench">
+                            <div
+                                class="quick-start-file-flow"
+                                aria-hidden="true"
+                            >
+                                <span class="quick-start-file">
+                                    <span class="quick-start-file-type">
+                                        PDF
+                                    </span>
+                                    report.pdf
+                                </span>
+                                <span class="quick-start-flow-line"></span>
+                                <span class="quick-start-file is-output">
+                                    <span class="quick-start-file-type">
+                                        MD
+                                    </span>
+                                    report.md
+                                </span>
+                            </div>
+
+                            <div class="quick-start-grid">
+                                {tb.steps.map((lines, s) => {
+                                    const isWebFirstStep =
+                                        tb.key === "web" && s === 0;
+                                    return (
+                                        <div
+                                            class:list={[
+                                                "quick-start-step",
+                                                { "is-output": s === 2 },
+                                            ]}
+                                        >
+                                            <div class="quick-start-step-header">
+                                                <span class="quick-start-number">
+                                                    {String(s + 1).padStart(
+                                                        2,
+                                                        "0",
+                                                    )}
+                                                </span>
+                                                <div class="quick-start-heading">
+                                                    <span class="quick-start-label">
+                                                        {isWebFirstStep
+                                                            ? webFirstStepLabel
+                                                            : quickStartStepLabels[
+                                                                  s
+                                                              ]}
+                                                    </span>
+                                                    <span class="quick-start-desc">
+                                                        {isWebFirstStep
+                                                            ? webFirstStepDescription
+                                                            : quickStartStepDescriptions[
+                                                                  s
+                                                              ]}
+                                                    </span>
+                                                </div>
+                                                {s < 2 ? (
+                                                    <button
+                                                        class="quick-start-copy"
+                                                        type="button"
+                                                        aria-label={t(
+                                                            "quickStart.copy",
+                                                        )}
+                                                    >
+                                                        {t("quickStart.copy")}
+                                                    </button>
+                                                ) : (
+                                                    <a
+                                                        class="quick-start-view"
+                                                        href="https://github.com/harrisonwang/spoor/tree/main/examples"
+                                                        target="_blank"
+                                                        rel="noopener"
+                                                        aria-label={t(
+                                                            "quickStart.view",
+                                                        )}
+                                                    >
+                                                        {t("quickStart.view")}
+                                                    </a>
+                                                )}
+                                            </div>
+                                            <div class="quick-start-code">
+                                                {lines.map((ln) => (
+                                                    <div
+                                                        class="cl"
+                                                        style={`color:${COLOR[ln.kind] || "#d8d4ca"}`}
+                                                    >
+                                                        {ln.text || " "}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div class="quick-start-footer">
+                                <button
+                                    class="quick-start-primary"
+                                    type="button"
+                                >
+                                    {CTA_LABEL[tb.key] || t("quickStart.copy")}
+                                </button>
+                                <a
+                                    class="quick-start-secondary"
+                                    href="https://github.com/harrisonwang/spoor/tree/main/examples"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    {t("quickStart.link")}
+                                    <span>↗</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll<HTMLElement>("#start").forEach((root) => {
+        const tabs = Array.from(
+            root.querySelectorAll<HTMLButtonElement>(".quick-start-tab"),
+        );
+        const panels = Array.from(
+            root.querySelectorAll<HTMLElement>(".quick-start-panel"),
+        );
+        const selectTab = (index: number, focus = false) => {
+            tabs.forEach((tab, tabIndex) => {
+                const isSelected = tabIndex === index;
+                tab.classList.toggle("is-on", isSelected);
+                tab.setAttribute("aria-selected", String(isSelected));
+                tab.tabIndex = isSelected ? 0 : -1;
+                if (isSelected && focus) tab.focus();
+            });
+            panels.forEach((panel, panelIndex) => {
+                const isSelected = panelIndex === index;
+                panel.classList.toggle("is-on", isSelected);
+                panel.hidden = !isSelected;
+            });
+        };
+        tabs.forEach((tab, index) => {
+            tab.addEventListener("click", () => selectTab(index));
+            tab.addEventListener("keydown", (event) => {
+                if (
+                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                        event.key,
+                    )
+                )
+                    return;
+                event.preventDefault();
+                const next =
+                    event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? tabs.length - 1
+                          : (index +
+                                (event.key === "ArrowRight" ? 1 : -1) +
+                                tabs.length) %
+                            tabs.length;
+                selectTab(next, true);
+            });
+        });
+        const writeClipboard = async (text: string) => {
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch {
+                // Fall through to the selection-based copy method.
+            }
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.setAttribute("readonly", "");
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            const copied = document.execCommand("copy");
+            textarea.remove();
+            return copied;
+        };
+        const copyTextFromStep = async (
+            step: Element,
+            trigger: HTMLElement,
+        ) => {
+            const code = step.querySelector<HTMLElement>(".quick-start-code");
+            const raw = code?.innerText || "";
+            const text = raw
+                .split("\n")
+                .map((l) => l.replace(/^\$\s/, ""))
+                .filter(
+                    (l) =>
+                        l.trim() && !l.startsWith("#") && !l.startsWith("//"),
+                )
+                .join("\n")
+                .trim();
+            if (!text) return;
+            if (!(await writeClipboard(text))) return;
+            const prev = trigger.innerHTML;
+            trigger.textContent = "✓";
+            trigger.classList.add("is-copied");
+            setTimeout(() => {
+                trigger.innerHTML = prev;
+                trigger.classList.remove("is-copied");
+            }, 1400);
+        };
+        root.querySelectorAll<HTMLButtonElement>(".quick-start-copy").forEach(
+            (btn) => {
+                btn.addEventListener("click", async () => {
+                    const step = btn.closest(".quick-start-step");
+                    if (!step) return;
+                    await copyTextFromStep(step, btn);
+                });
+            },
+        );
+        root.querySelectorAll<HTMLButtonElement>(
+            ".quick-start-primary",
+        ).forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const panel = btn.closest(".quick-start-panel");
+                const step = panel?.querySelector(".quick-start-step");
+                if (!step) return;
+                await copyTextFromStep(step, btn);
+            });
+        });
+    });
+</script>
+
+<style>
+    #start {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background:
+            radial-gradient(
+                circle at 12% 22%,
+                rgba(194, 90, 53, 0.08),
+                transparent 24rem
+            ),
+            linear-gradient(180deg, #f7f1e6 0%, #f3ecdf 100%);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+    }
+    #start::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        content: "";
+        opacity: 0.42;
+        background-image: radial-gradient(#b9aa94 0.75px, transparent 0.75px);
+        background-size: 18px 18px;
+        mask-image: linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.55),
+            transparent 35%,
+            transparent
+        );
+        -webkit-mask-image: linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.55),
+            transparent 35%,
+            transparent
+        );
+    }
+    .inner {
+        max-width: 1180px;
+        padding-top: clamp(76px, 8vw, 112px);
+        padding-bottom: clamp(76px, 8vw, 108px);
+    }
+    .quick-start-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(330px, 0.8fr);
+        gap: clamp(40px, 7vw, 96px);
+        align-items: end;
+        margin-bottom: 34px;
+    }
+    .lead {
+        max-width: 670px;
+    }
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+    }
+    .eyebrow::before {
+        width: 28px;
+        height: 1px;
+        content: "";
+        background: currentColor;
+    }
+    h2 {
+        max-width: 690px;
+        margin-top: 14px;
+        font-size: clamp(28px, 2.8vw, 38px);
+        font-weight: 700;
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+        text-wrap: balance;
+    }
+    .quick-start-intro-side {
+        display: grid;
+        gap: 22px;
+    }
+    .sub {
+        max-width: 460px;
+        color: var(--ink-2);
+        font-size: 15px;
+        line-height: 1.75;
+    }
+
+    .quick-start-tabs {
+        display: flex;
+        width: fit-content;
+        max-width: 100%;
+        gap: 2px;
+        padding: 4px;
+        overflow-x: auto;
+        background: rgba(235, 225, 207, 0.74);
+        border: 1px solid rgba(113, 91, 65, 0.14);
+        border-radius: 12px;
+        box-shadow: inset 0 1px rgba(255, 255, 255, 0.72);
+        scrollbar-width: none;
+    }
+    .quick-start-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .quick-start-tab {
+        position: relative;
+        flex: none;
+        appearance: none;
+        padding: 8px 14px;
+        color: #756c5f;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        transition:
+            color 0.18s ease,
+            background 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+    }
+    .quick-start-tab:hover {
+        color: var(--terracotta-dark);
+    }
+    .quick-start-tab:focus-visible {
+        outline: 2px solid var(--terracotta);
+        outline-offset: 2px;
+    }
+    .quick-start-tab.is-on {
+        color: var(--terracotta-dark);
+        background: #fffdf8;
+        box-shadow:
+            0 1px 2px rgba(64, 40, 19, 0.08),
+            0 4px 12px rgba(64, 40, 19, 0.07);
+        transform: translateY(-1px);
+    }
+
+    .quick-start-panels {
+        width: 100%;
+    }
+    .quick-start-panel[hidden] {
+        display: none;
+    }
+    .quick-start-panel.is-on {
+        animation: panel-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .quick-start-workbench {
+        position: relative;
+        padding: 16px;
+        background: rgba(255, 252, 246, 0.72);
+        border: 1px solid rgba(122, 95, 64, 0.2);
+        border-radius: 22px;
+        box-shadow:
+            0 1px 1px rgba(56, 36, 18, 0.05),
+            0 20px 55px rgba(67, 45, 24, 0.1);
+        backdrop-filter: blur(12px);
+    }
+    .quick-start-file-flow {
+        display: grid;
+        grid-template-columns: auto minmax(100px, 1fr) auto;
+        align-items: center;
+        gap: 16px;
+        padding: 2px 5px 15px;
+        color: #665e52;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .quick-start-file {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .quick-start-file-type {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 22px;
+        color: #fff8ef;
+        background: var(--terracotta);
+        border-radius: 5px;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+    }
+    .quick-start-file.is-output .quick-start-file-type {
+        color: #e9f3e3;
+        background: #527a48;
+    }
+    .quick-start-flow-line {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        height: 1px;
+        background: #d8cbb7;
+    }
+    .quick-start-flow-line::after {
+        position: absolute;
+        top: -3px;
+        right: 0;
+        width: 7px;
+        height: 7px;
+        content: "";
+        border-top: 1px solid #aa9478;
+        border-right: 1px solid #aa9478;
+        transform: rotate(45deg);
+    }
+    .quick-start-flow-line span {
+        position: relative;
+        top: -7px;
+        padding: 0 10px;
+        color: #9a8b77;
+        background: #fbf6ed;
+        font-size: 8px;
+        letter-spacing: 0.12em;
+    }
+    .quick-start-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        align-items: stretch;
+    }
+    .quick-start-step {
+        position: relative;
+        display: flex;
+        min-width: 0;
+        min-height: 208px;
+        flex-direction: column;
+        padding: 20px;
+        overflow: visible;
+        background: rgba(255, 254, 251, 0.9);
+        border: 1px solid #e5d9c7;
+        border-radius: 15px;
+        box-shadow: 0 6px 18px rgba(59, 40, 22, 0.035);
+        transition:
+            transform 0.22s ease,
+            border-color 0.22s ease,
+            box-shadow 0.22s ease;
+    }
+    .quick-start-step:hover {
+        z-index: 2;
+        border-color: #d5bea5;
+        box-shadow: 0 14px 30px rgba(59, 40, 22, 0.08);
+        transform: translateY(-3px);
+    }
+    .quick-start-step.is-output {
+        background: linear-gradient(
+            145deg,
+            rgba(255, 253, 248, 0.98),
+            rgba(244, 238, 226, 0.98)
+        );
+        border-color: #d9c7ae;
+    }
+    .quick-start-step.is-output::before {
+        position: absolute;
+        top: -1px;
+        right: 18px;
+        left: 18px;
+        height: 2px;
+        content: "";
+        background: linear-gradient(
+            90deg,
+            transparent,
+            var(--terracotta),
+            transparent
+        );
+    }
+    .quick-start-step:not(:last-child)::after {
+        position: absolute;
+        z-index: 3;
+        top: 50%;
+        right: -19px;
+        width: 24px;
+        height: 24px;
+        content: "→";
+        display: grid;
+        place-items: center;
+        color: #a78f74;
+        background: #f8f2e7;
+        border: 1px solid #dacbb6;
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 12px;
+        transform: translateY(-50%);
+    }
+    .quick-start-step-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-height: 43px;
+        margin-bottom: 17px;
+    }
+    .quick-start-number {
+        flex: none;
+        padding-top: 2px;
+        color: var(--terracotta);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+    .quick-start-heading {
+        display: grid;
+        min-width: 0;
+        gap: 4px;
+    }
+    .quick-start-label {
+        color: #29241e;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+    .quick-start-desc {
+        color: #7c7367;
+        font-size: 11.5px;
+        line-height: 1.4;
+    }
+    .quick-start-copy,
+    .quick-start-view {
+        flex: none;
+        display: inline-flex;
+        min-width: 44px;
+        height: 25px;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        padding: 0 8px;
+        color: #8a7c69;
+        background: transparent;
+        border: 1px solid #e5d9c8;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        transition:
+            color 0.15s ease,
+            background 0.15s ease,
+            border-color 0.15s ease;
+    }
+    .quick-start-copy:hover,
+    .quick-start-view:hover {
+        color: var(--terracotta-dark);
+        background: #fff9f0;
+        border-color: #d9bda7;
+    }
+    .quick-start-copy:focus-visible,
+    .quick-start-view:focus-visible,
+    .quick-start-primary:focus-visible,
+    .quick-start-secondary:focus-visible {
+        outline: 2px solid var(--terracotta);
+        outline-offset: 3px;
+    }
+    .quick-start-copy.is-copied {
+        color: #42663b;
+        border-color: #abc4a4;
+    }
+    .quick-start-code {
+        position: relative;
+        flex: 1;
+        min-height: 90px;
+        padding: 34px 15px 14px;
+        overflow: auto;
+        color: #d8d4ca;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent),
+            var(--term-bg);
+        border: 1px solid #2c2924;
+        border-radius: 10px;
+        box-shadow:
+            inset 0 1px rgba(255, 255, 255, 0.04),
+            0 8px 18px rgba(31, 25, 20, 0.12);
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.72;
+    }
+    .quick-start-code::before {
+        position: absolute;
+        top: 13px;
+        left: 14px;
+        width: 5px;
+        height: 5px;
+        content: "";
+        background: #665b4d;
+        border-radius: 50%;
+        box-shadow:
+            9px 0 #514c43,
+            18px 0 #3e4e37;
+    }
+    .quick-start-code .cl {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .quick-start-footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding: 24px 8px 4px;
+        text-align: center;
+        flex-wrap: wrap;
+    }
+    .quick-start-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        appearance: none;
+        padding: 11px 18px;
+        color: #fffaf5;
+        background: var(--terracotta);
+        border: 1px solid var(--terracotta);
+        border-radius: 9px;
+        box-shadow: 0 10px 22px rgba(178, 91, 52, 0.18);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease,
+            background 0.18s ease;
+    }
+    .quick-start-primary:hover {
+        background: var(--terracotta-dark);
+        box-shadow: 0 14px 26px rgba(178, 91, 52, 0.25);
+        transform: translateY(-2px);
+    }
+    .quick-start-primary.is-copied {
+        background: #527a48;
+        border-color: #527a48;
+    }
+    .quick-start-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 0;
+        color: var(--ink);
+        border-bottom: 1px solid #cbb49e;
+        font-size: 13px;
+        font-weight: 600;
+        transition:
+            color 0.15s ease,
+            border-color 0.15s ease;
+    }
+    .quick-start-secondary:hover {
+        color: var(--terracotta-dark);
+        border-color: var(--terracotta);
+    }
+    .quick-start-secondary span {
+        transition: transform 0.15s ease;
+    }
+    .quick-start-secondary:hover span {
+        transform: translate(2px, -2px);
+    }
+
+    @keyframes panel-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @media (max-width: 920px) {
+        .quick-start-intro {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .quick-start-intro-side {
+            gap: 18px;
+        }
+        .sub {
+            max-width: 620px;
+        }
+        .quick-start-grid {
+            grid-template-columns: 1fr;
+        }
+        .quick-start-step {
+            min-height: 0;
+        }
+        .quick-start-step:not(:last-child)::after {
+            top: auto;
+            right: 50%;
+            bottom: -19px;
+            content: "↓";
+            transform: translateX(50%);
+        }
+    }
+    @media (max-width: 620px) {
+        .inner {
+            padding-right: 18px;
+            padding-left: 18px;
+        }
+        h2 {
+            font-size: clamp(28px, 2.8vw, 38px);
+        }
+        .quick-start-tabs {
+            width: 100%;
+        }
+        .quick-start-workbench {
+            padding: 10px;
+            border-radius: 17px;
+        }
+        .quick-start-file-flow {
+            grid-template-columns: auto 1fr auto;
+            gap: 9px;
+            padding: 3px 3px 12px;
+        }
+        .quick-start-file {
+            gap: 5px;
+            font-size: 0;
+        }
+        .quick-start-flow-line span {
+            display: none;
+        }
+        .quick-start-step {
+            padding: 17px;
+        }
+        .quick-start-code {
+            font-size: 11px;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .quick-start-panel.is-on {
+            animation: none;
+        }
+        .quick-start-step,
+        .quick-start-tab,
+        .quick-start-primary,
+        .quick-start-secondary span {
+            transition: none;
+        }
+    }
+</style>

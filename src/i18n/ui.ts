@@ -7,9 +7,8 @@ export const ui = {
   zh: {
     "nav.agent": "智能体",
     "nav.cli": "命令行",
-    "nav.runtime": "运行",
-    "nav.install": "安装",
-    "nav.develop": "开发",
+    "nav.runtime": "运行环境",
+    "nav.start": "快速开始",
 
     "hero.badge": "为 Agent 而生",
     "hero.title.a": "文档解析引擎",
@@ -34,7 +33,7 @@ export const ui = {
     "runtime.eyebrow": "跨端一致",
     "runtime.title": "同一核心，一致输出",
     "runtime.sub":
-      "从本地原生库到 CLI，从浏览器 WASM 再到边缘运行时，底层都使用同一套解析内核。",
+      "从本地原生库到 CLI，从浏览器 WASM 再到边缘运行环境，底层都使用同一套解析内核。",
     "runtime.c1.tag": "原生 · NATIVE",
     "runtime.c1.title": "服务端与本地沙箱",
     "runtime.c1.body": "单二进制部署，原生库集成",
@@ -47,17 +46,26 @@ export const ui = {
     "runtime.note":
       "配合浏览器内或本地模型,文档从解析到推理整条链路都不出端 —— 合同、报表、隐私数据留在原地。",
 
-    "install.eyebrow": "快速安装",
-    "install.title": "选择你的接入方式",
-    "install.sub":
-      "命令行处理、本地应用集成、浏览器内解析，按场景选择对应包即可开始使用。",
-
-    "develop.eyebrow": "开发集成",
-    "develop.title.a": "接入 Agent 工具层",
-    "develop.title.b": "",
-    "develop.sub":
-      "无论使用 Python、Node 还是 WASM，输出结构保持一致。正文、表格与解析警告分层返回，方便 Agent 继续处理。",
-    "develop.link": "看完整集成示例",
+    "quickStart.eyebrow": "快速开始",
+    "quickStart.title": "3 步把文档转成模型可用文本",
+    "quickStart.sub": "安装、解析、缺失内容标记和提示，一次完成。",
+    "quickStart.s1": "安装 Spoor",
+    "quickStart.s2": "解析 PDF",
+    "quickStart.s3": "得到模型可直接消费的文本",
+    "quickStart.s1.web": "上传 PDF",
+    "quickStart.s1.desc": "30 秒完成，本地运行",
+    "quickStart.s1.web.desc": "浏览器内解析，文件不出端",
+    "quickStart.s2.desc": "保留页码、段落和表格结构",
+    "quickStart.s3.desc": "自动标出图片、图表、公式等遗漏风险",
+    "quickStart.copy": "Copy",
+    "quickStart.view": "View",
+    "quickStart.cta.cli": "复制安装命令",
+    "quickStart.cta.py": "复制 pip 命令",
+    "quickStart.cta.node": "复制 npm 命令",
+    "quickStart.cta.rust": "复制 cargo 命令",
+    "quickStart.cta.web": "复制上传示例",
+    "quickStart.tab.web": "浏览器",
+    "quickStart.link": "查看完整示例",
 
     "footer.tagline": "把文档变成 LLM 能直接读的文本。",
     "footer.legal": "离线、单二进制,文件永不离开你的运行环境",
@@ -66,8 +74,7 @@ export const ui = {
     "nav.agent": "Agent",
     "nav.cli": "CLI",
     "nav.runtime": "Runtime",
-    "nav.install": "Install",
-    "nav.develop": "Develop",
+    "nav.start": "Quick Start",
 
     "hero.badge": "DOCUMENT PARSING FOR AGENTS",
     "hero.title.a": "document parsing",
@@ -105,17 +112,27 @@ export const ui = {
     "runtime.note":
       "Pair it with a browser-local or on-device model and the whole pipeline — parse to inference — never leaves the device. Contracts, reports and private data stay put.",
 
-    "install.eyebrow": "QUICK INSTALL",
-    "install.title": "Choose your integration path.",
-    "install.sub":
-      "Command line workflows, local app integration or browser-side parsing — pick the package that matches your scenario and start parsing.",
-
-    "develop.eyebrow": "INTEGRATION",
-    "develop.title.a": "Add it to your agent tool layer.",
-    "develop.title.b": "",
-    "develop.sub":
-      "Python, Node and WASM integrations return the same output shape. Text, tables and parse warnings are separated so agents can continue cleanly.",
-    "develop.link": "Browse full examples",
+    "quickStart.eyebrow": "QUICK START",
+    "quickStart.title": "PDF to trusted Markdown in 3 steps.",
+    "quickStart.sub":
+      "Install, parse, and check missing content in one flow. Pick your stack and copy-paste to your first parsed document.",
+    "quickStart.s1": "Install Spoor",
+    "quickStart.s2": "Parse PDF",
+    "quickStart.s3": "Get Markdown + integrity report",
+    "quickStart.s1.web": "Upload a PDF",
+    "quickStart.s1.desc": "Local setup in 30 seconds",
+    "quickStart.s1.web.desc": "Parse in the browser; files stay local",
+    "quickStart.s2.desc": "Preserve pages, paragraphs, and tables",
+    "quickStart.s3.desc": "Flag risks around images, charts, and formulas",
+    "quickStart.copy": "Copy",
+    "quickStart.view": "View",
+    "quickStart.cta.cli": "Copy install command",
+    "quickStart.cta.py": "Copy pip command",
+    "quickStart.cta.node": "Copy npm command",
+    "quickStart.cta.rust": "Copy cargo command",
+    "quickStart.cta.web": "Copy upload snippet",
+    "quickStart.tab.web": "Browser",
+    "quickStart.link": "Browse full example",
 
     "footer.tagline": "Documents into text your LLM can read.",
     "footer.legal": "offline, single binary — files never leave your runtime",

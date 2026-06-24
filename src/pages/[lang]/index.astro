@@ -5,8 +5,7 @@ import Nav from '../../components/Nav.astro';
 import Hero from '../../components/Hero.astro';
 import Cli from '../../components/Cli.astro';
 import Runtime from '../../components/Runtime.astro';
-import Install from '../../components/Install.astro';
-import Develop from '../../components/Develop.astro';
+import QuickStart from '../../components/QuickStart.astro';
 import Footer from '../../components/Footer.astro';
 import type { Lang } from '../../i18n/ui';
 
@@ -22,7 +21,6 @@ const { lang } = Astro.params as { lang: Lang };
   <Hero lang={lang} />
   <Cli lang={lang} />
   <Runtime lang={lang} />
-  <Install lang={lang} />
-  <Develop lang={lang} />
+  <QuickStart lang={lang} />
   <Footer lang={lang} />
 </Base>

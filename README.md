@@ -50,7 +50,7 @@ src/
 │  ├─ TrustStrip.astro
 │  ├─ Cli.astro          # 命令行区（含 CliTerminal）
 │  ├─ CliTerminal.astro  # 终端打字动画 + 文档切换
-│  ├─ Runtime.astro      # 运行形态（原生/WASM/Edge）
+│  ├─ Runtime.astro      # 运行环境（原生/WASM/Edge）
 │  ├─ Install.astro      # 安装（CodeTabs）
 │  ├─ Develop.astro      # 开发（CodeTabs）
 │  ├─ CodeTabs.astro     # 通用：可切换的静态代码块

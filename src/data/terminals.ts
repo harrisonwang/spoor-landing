@@ -18,13 +18,13 @@ export const extractionScene: Line[] = [
   },
   {
     sub: "calls",
-    text: "vendor_payment_pack.pdf",
+    text: 'read_document("vendor_payment_pack.pdf", provenance="page")',
     kind: "call",
   },
   {
     role: "TOOL",
     sub: "returns",
-    text: "provenance.page",
+    text: "markdown · provenance.page spans",
     kind: "result",
   },
   { text: "pdf_page_no_text_layer · page 4", kind: "warn" },
@@ -36,14 +36,19 @@ export const extractionScene: Line[] = [
     kind: "reason",
   },
   {
+    sub: "calls",
+    text: 'extract_image(uri="spoor://pdf/page/4")',
+    kind: "call",
+  },
+  {
     role: "TOOL",
     sub: "returns",
-    text: "visual handle: spoor://pdf/page/4",
-    kind: "uri",
+    text: "image/png · page 4",
+    kind: "result",
   },
   {
     sub: "calls",
-    text: "inspect(spoor://pdf/page/4)",
+    text: 'inspect_image("page-4.png")',
     kind: "vlm",
   },
   {
@@ -60,6 +65,49 @@ export const extractionScene: Line[] = [
   },
 ];
 
+/* 静默乱码陷阱 —— 坏文本层不静默交错答 */
+export const suspiciousScene: Line[] = [
+  {
+    role: "USER",
+    text: "@尽调报告_扫描版.pdf  提取标的公司净利润。不确定的不要猜。",
+    kind: "user",
+  },
+  {
+    role: "MODEL",
+    sub: "thinking",
+    text: "先读,要页级来源。",
+    kind: "reason",
+  },
+  {
+    sub: "calls",
+    text: 'read_document("尽调报告_扫描版.pdf", provenance="page")',
+    kind: "call",
+  },
+  {
+    role: "TOOL",
+    sub: "returns",
+    text: "markdown · provenance.page spans",
+    kind: "result",
+  },
+  { text: "pdf_page_suspicious_text_layer · page 5", kind: "warn" },
+  {
+    role: "MODEL",
+    sub: "thinking",
+    text: "第 5 页文本层疑似坏 OCR / 错位,不能当真值。不硬猜,标注并请人工 / VLM 复核。",
+    kind: "reason",
+  },
+  {
+    role: "MODEL",
+    sub: "replies",
+    text: "净利润:该页文本不可信(疑似坏文本层)[p5 · 需复核]",
+    kind: "msg",
+  },
+  {
+    text: "没把这页乱码当真值返回 —— 云 OCR 会当真,自信给个错数字且无警告。",
+    kind: "msg",
+  },
+];
+
 export const traceScenes: { fmt: string; lines: Line[] }[] = [
   {
     fmt: "PDF",
@@ -67,56 +115,7 @@ export const traceScenes: { fmt: string; lines: Line[] }[] = [
   },
   {
     fmt: "PDF",
-    lines: [
-      {
-        role: "USER",
-        text: "@央行工作论文.pdf  这张图讲了什么?",
-        kind: "user",
-      },
-      {
-        role: "MODEL",
-        sub: "thinking",
-        text: "先把文档读成文本。",
-        kind: "reason",
-      },
-      {
-        sub: "calls",
-        text: 'read_document(path="央行工作论文.pdf")',
-        kind: "call",
-      },
-      {
-        role: "TOOL",
-        sub: "returns",
-        text: "## 区块链能做什么、不能做什么 …  [28 KB]",
-        kind: "result",
-      },
-      { text: "embedded_visuals_omitted · page 6", kind: "warn" },
-      { text: "spoor://pdf/obj/59/0", kind: "uri" },
-      {
-        role: "MODEL",
-        sub: "thinking",
-        text: "第 6 页有张图没进文本,取出来看。",
-        kind: "reason",
-      },
-      {
-        sub: "calls",
-        text: 'extract_document_media(uri="spoor://pdf/obj/59/0")',
-        kind: "call",
-      },
-      {
-        role: "TOOL",
-        sub: "returns",
-        text: "image/png · 1 张",
-        kind: "result",
-      },
-      {
-        role: "MODEL",
-        sub: "replies",
-        text: "图 1 是「Token 范式」同心圆:内圈是链上",
-        kind: "msg",
-      },
-      { text: "可信世界,外圈是链下现实世界。", kind: "msg" },
-    ],
+    lines: suspiciousScene,
   },
   {
     fmt: "XLSX",
@@ -274,131 +273,87 @@ export const cliSeq: { fmt: string; cmd: string; out: Line[] }[] = [
   },
 ];
 
-export const devTabs: { label: string; lines: Line[] }[] = [
+/* 快速开始 —— 每个技术栈:① 安装 → ② 解析 → ③ 结果(含完整性警告)
+   注:三列横排卡,每行尽量 ≤ ~36 字符以免折行 */
+export const quickStartTabs: { key: string; steps: Line[][] }[] = [
   {
-    label: "Rust",
-    lines: [
-      {
-        text: "let mut req = spoor_core::ParseRequest::new(bytes);",
-        kind: "norm",
-      },
-      { text: 'req.source_name = Some("report.pdf".into());', kind: "norm" },
-      { text: "", kind: "norm" },
-      { text: "let res = spoor_core::parse(&req)?;", kind: "accent" },
-      { text: 'println!("{}", res.markdown);', kind: "norm" },
-      { text: "for w in &res.warnings {           // 完整性警告", kind: "dim" },
-      { text: '    eprintln!("{} {:?}", w.code, w.location);', kind: "norm" },
-      { text: "}", kind: "norm" },
+    key: "cli",
+    steps: [
+      [{ text: "$ brew install harrisonwang/tap/spoor", kind: "accent" }],
+      [{ text: "$ spoor report.pdf > report.md", kind: "accent" }],
+      [
+        { text: "## Page 1", kind: "head" },
+        { text: "Q3 营收 1.28 亿,同比 +18% …", kind: "norm" },
+        { text: "", kind: "norm" },
+        { text: "⚠ embedded_visuals_omitted · p6", kind: "warn" },
+      ],
     ],
   },
   {
-    label: "Python",
-    lines: [
-      { text: "from pyspoor import parse_path", kind: "dim" },
-      { text: "", kind: "norm" },
-      { text: "def read_document(path):           # agent 工具", kind: "dim" },
-      { text: "    res = parse_path(path)", kind: "norm" },
-      { text: "    for w in res.warnings:", kind: "norm" },
-      { text: "        log(w.code, w.location)", kind: "norm" },
-      { text: "    return res.markdown", kind: "norm" },
+    key: "py",
+    steps: [
+      [{ text: "$ pip install pyspoor", kind: "accent" }],
+      [
+        { text: "from spoor import parse_path", kind: "dim" },
+        { text: 'r = parse_path("report.pdf")', kind: "norm" },
+        { text: "print(r.markdown)", kind: "norm" },
+      ],
+      [
+        { text: "markdown = r.markdown", kind: "norm" },
+        { text: "warnings = r.warnings", kind: "norm" },
+        { text: "⚠ embedded_visuals_omitted · p6", kind: "warn" },
+      ],
     ],
   },
   {
-    label: "Node.js",
-    lines: [
-      { text: "import { parse } from '@harrisonwang/spoor'", kind: "dim" },
-      { text: "import { readFile } from 'node:fs/promises'", kind: "dim" },
-      { text: "", kind: "norm" },
-      { text: "const res = parse(await readFile('report.pdf'),", kind: "norm" },
-      { text: "  { sourceName: 'report.pdf' })", kind: "norm" },
-      { text: "console.log(res.markdown)", kind: "norm" },
-      {
-        text: "res.warnings.forEach(w => log(w.code, w.location))",
-        kind: "norm",
-      },
+    key: "node",
+    steps: [
+      [{ text: "$ npm i @harrisonwang/spoor", kind: "accent" }],
+      [
+        { text: "import { parse } from '@harrisonwang/spoor'", kind: "dim" },
+        { text: 'const r = await parse("report.pdf")', kind: "norm" },
+        { text: "console.log(r.markdown)", kind: "norm" },
+      ],
+      [
+        { text: "r.markdown       // ready for LLM", kind: "norm" },
+        { text: "r.warnings       // integrity report", kind: "norm" },
+        { text: "⚠ embedded_visuals_omitted · p6", kind: "warn" },
+      ],
     ],
   },
   {
-    label: "WASM Web",
-    lines: [
-      {
-        text: "import init, { parse } from '@harrisonwang/spoor-wasm'",
-        kind: "dim",
-      },
-      { text: "", kind: "norm" },
-      { text: "await init()", kind: "norm" },
-      { text: "// 文件在浏览器内解析,不上传", kind: "dim" },
-      { text: "const res = parse(new Uint8Array(buf),", kind: "norm" },
-      { text: "  { sourceName: file.name })", kind: "norm" },
-      { text: "render(res.markdown)", kind: "norm" },
+    key: "rust",
+    steps: [
+      [{ text: "$ cargo add spoor-core", kind: "accent" }],
+      [
+        { text: "use spoor_core::parse_path;", kind: "dim" },
+        { text: 'let r = parse_path("report.pdf")?;', kind: "norm" },
+        { text: 'println!("{}", r.markdown);', kind: "norm" },
+      ],
+      [
+        { text: "r.markdown       // LLM-ready", kind: "norm" },
+        { text: "r.warnings       // check omissions", kind: "norm" },
+        { text: "⚠ embedded_visuals_omitted · Page(6)", kind: "warn" },
+      ],
     ],
   },
   {
-    label: "WASM Edge",
-    lines: [
-      {
-        text: "import init, { parse } from '@harrisonwang/spoor-wasm'",
-        kind: "dim",
-      },
-      { text: "", kind: "norm" },
-      {
-        text: "export default {                   // Cloudflare Worker",
-        kind: "dim",
-      },
-      { text: "  async fetch(req) {", kind: "norm" },
-      { text: "    await init()", kind: "norm" },
-      { text: "    const buf = await req.arrayBuffer()", kind: "norm" },
-      { text: "    const res = parse(new Uint8Array(buf))", kind: "accent" },
-      { text: "    return Response.json(res)", kind: "norm" },
-      { text: "  }", kind: "norm" },
-      { text: "}", kind: "norm" },
-    ],
-  },
-];
-
-export const installTabs: { label: string; lines: Line[] }[] = [
-  {
-    label: "brew",
-    lines: [
-      { text: "brew install harrisonwang/tap/spoor", kind: "accent" },
-      { text: "", kind: "norm" },
-      { text: "# macOS / Linux · CLI 单二进制", kind: "dim" },
-    ],
-  },
-  {
-    label: "scoop",
-    lines: [
-      { text: "scoop bucket add harrisonwang \\", kind: "accent" },
-      {
-        text: "  https://github.com/harrisonwang/scoop-bucket",
-        kind: "accent",
-      },
-      { text: "scoop install spoor", kind: "accent" },
-      { text: "# Windows", kind: "dim" },
-    ],
-  },
-  {
-    label: "cargo",
-    lines: [
-      { text: "cargo install spoor-cli", kind: "accent" },
-      { text: "", kind: "norm" },
-      { text: "# 进项目:cargo add spoor-core", kind: "dim" },
-    ],
-  },
-  {
-    label: "pip",
-    lines: [
-      { text: "pip install pyspoor", kind: "accent" },
-      { text: "", kind: "norm" },
-      { text: 'parse_path("report.pdf").markdown', kind: "dim" },
-    ],
-  },
-  {
-    label: "npm",
-    lines: [
-      { text: "npm i @harrisonwang/spoor", kind: "accent" },
-      { text: "", kind: "norm" },
-      { text: "parse(bytes, { sourceName }).markdown", kind: "dim" },
+    key: "web",
+    steps: [
+      [
+        { text: '<input type="file" accept=".pdf" />', kind: "accent" },
+        { text: "选择 report.pdf", kind: "dim" },
+      ],
+      [
+        { text: "await initSpoor()", kind: "dim" },
+        { text: "const r = parsePdf(file)", kind: "norm" },
+        { text: "renderPreview(r.markdown)", kind: "norm" },
+      ],
+      [
+        { text: 'download("report.md", r.markdown)', kind: "accent" },
+        { text: "✓ 0 网络请求 · 文件不出端", kind: "accent" },
+        { text: "⚠ embedded_visuals_omitted · p6", kind: "warn" },
+      ],
     ],
   },
 ];
