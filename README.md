@@ -17,6 +17,13 @@ npm run build    # 输出到 dist/，纯静态
 npm run preview
 ```
 
+部署到 Cloudflare Pages：
+
+```bash
+npm run build
+npx run deploy
+```
+
 ## 路由
 
 - `/`        → 重定向到 `/zh/`
