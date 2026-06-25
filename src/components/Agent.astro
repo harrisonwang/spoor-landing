@@ -352,6 +352,8 @@ const cfg = {
     }
     .uq {
         flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
         font-size: 13.5px;
         color: #2a2620;
         line-height: 1.5;
@@ -463,5 +465,29 @@ const cfg = {
         flex: 1;
         font-size: 12.5px;
         color: #b3a995;
+    }
+
+    /* 移动端:隐藏会话栏,单条全宽对话(demo 仍自动轮播场景) */
+    @media (max-width: 560px) {
+        .panes {
+            grid-template-columns: 1fr;
+            height: 500px;
+        }
+        .rail {
+            display: none;
+        }
+        .thread {
+            padding: 16px 14px 14px;
+        }
+        .composer {
+            margin: 10px 12px;
+        }
+        .gut,
+        #agent-demo-body :global(.gut) {
+            width: 32px;
+        }
+        .cursor {
+            margin-left: 41px;
+        }
     }
 </style>
